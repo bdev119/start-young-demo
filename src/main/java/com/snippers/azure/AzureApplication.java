@@ -1,8 +1,15 @@
 package com.snippers.azure;
 
+import com.snippers.azure.beans.LoginCredentails;
 import com.snippers.azure.beans.RegistrationBean;
+import com.snippers.azure.beans.SchoolRegistration;
+import com.snippers.azure.mapper.SchoolRegistrationMapper;
+import com.snippers.azure.model.Login_Credentials;
 import com.snippers.azure.model.Registration_Master;
+import com.snippers.azure.model.School_Registration;
+import com.snippers.azure.repository.LoginRepository;
 import com.snippers.azure.repository.RegistrationRepository;
+import com.snippers.azure.repository.SchoolRegistrationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,6 +24,15 @@ public class AzureApplication {
     @Autowired
     private RegistrationRepository registrationRepository;
 
+    @Autowired
+    private LoginRepository loginRepository;
+
+    @Autowired
+    private SchoolRegistrationRepository schoolRegistrationRepository;
+
+    @Autowired
+    private SchoolRegistrationMapper schoolRegistrationMapper;
+
     @PostMapping("/registartion")
     public Registration_Master registrationMaster(@RequestBody RegistrationBean registrationBean) {
         Registration_Master registration_master = new Registration_Master();
@@ -26,6 +42,21 @@ public class AzureApplication {
         registration_master.setRegistrationType(registrationBean.getRegistrationType());
         registration_master.setUserId(registrationBean.getUserId());
         return registrationRepository.save(registration_master);
+    }
+
+    @PostMapping("/registerSchool")
+    public String registrationMaster(@RequestBody SchoolRegistration schoolRegistration) {
+        School_Registration school_registration = schoolRegistrationMapper.mapToSchoolRegistrationModel(schoolRegistration);
+
+        Login_Credentials loginCredentials = new Login_Credentials();
+        loginCredentials.setUserId(schoolRegistration.getUserId());
+        loginCredentials.setUserPassword(schoolRegistration.getPassword());
+        loginCredentials.setUserType("School");
+        loginRepository.save(loginCredentials);
+
+        schoolRegistrationRepository.save(school_registration);
+
+        return "Success";
     }
 
    /* @GetMapping("/logincredentials")
@@ -126,5 +157,6 @@ public class AzureApplication {
             System.out.printf("Error in sending email, {%s}", ex);
         }
     }*/
+
 
 }
